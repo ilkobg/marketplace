@@ -7,8 +7,6 @@ import "./NFT.sol";
 contract Marketplace is ReentrancyGuard {
     struct Listing {
         address owner;
-        address nftContractAddress;
-        uint256 tokenId;
         uint256 price;
     }
 
@@ -25,9 +23,7 @@ contract Marketplace is ReentrancyGuard {
 
         listings[_nftContractAddress][tokenId] = Listing({
             owner: msg.sender,
-            tokenId: tokenId,
-            price: price,
-            nftContractAddress: _nftContractAddress
+            price: price
         });
         
         emit List(msg.sender, tokenId, _nftContractAddress, price);
@@ -38,10 +34,7 @@ contract Marketplace is ReentrancyGuard {
         require(msg.value >= listings[nftContractAddress][tokenId].price, "Insufficient funds");
 
         address seller = listings[nftContractAddress][tokenId].owner;
-        address owner = listings[nftContractAddress][tokenId].owner;
-        uint256 _tokenId = listings[nftContractAddress][tokenId].tokenId;
         uint256 price = listings[nftContractAddress][tokenId].price;
-        address _nftContractAddress = listings[nftContractAddress][tokenId].nftContractAddress;
 
         delete listings[nftContractAddress][tokenId];
 
@@ -53,23 +46,21 @@ contract Marketplace is ReentrancyGuard {
         }
 
         //Tranfer NFT to the new owner
-        IERC721(_nftContractAddress).transferFrom(
-            owner,
+        IERC721(nftContractAddress).transferFrom(
+            seller,
             msg.sender,
-            listings[nftContractAddress][_tokenId].tokenId
+            tokenId
         );
 
-        emit Buy(msg.sender, seller, tokenId, _nftContractAddress, price);
+        emit Buy(msg.sender, seller, tokenId, nftContractAddress, price);
     }
 
     function cancelListing(uint256 tokenId, address nftContractAddress) external {
         require (listings[nftContractAddress][tokenId].owner != address(0), "Token is not listed");
         require(msg.sender == listings[nftContractAddress][tokenId].owner, "Only owner can cancel the listing");
 
-        address _nftContractAddress = listings[nftContractAddress][tokenId].nftContractAddress;
-
         delete listings[nftContractAddress][tokenId];
 
-        emit Cancel(msg.sender, tokenId, _nftContractAddress);
+        emit Cancel(msg.sender, tokenId, nftContractAddress);
     }
 }
