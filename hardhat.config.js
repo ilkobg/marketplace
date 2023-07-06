@@ -38,14 +38,12 @@ const lazyImport = async (module) => {
   return await import(module);
 };
 
-/**
 task("deploy-pk", "Deploys contract with pk")
   .addParam("privateKey", "Please provide the private key")
   .setAction(async ({ privateKey }) => {
-    const { main } = await lazyImport("./scripts/deploy.js");
+    const { main } = await lazyImport("./scripts/deploy-pk.js");
     await main(privateKey);
 });
-*/
 
 task("deploy", "Deploys contract").setAction(async () => {
   const { main } = await lazyImport("./scripts/deploy.js");
