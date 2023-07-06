@@ -11,11 +11,10 @@ contract NFT is ERC721URIStorage {
 
     constructor() ERC721("Trade NFTs", "NFT") {}
 
-    function safeMint(address marketplaceAddress, /*string memory uri,*/ address creator) public payable returns (uint) {
+    function safeMint(address marketplaceAddress, address creator) public payable returns (uint) {
         uint256 tokenId = _tokenIdCounter.current();
 
         _mint(creator, tokenId);
-        //_setTokenURI(tokenId, uri);
         approve(marketplaceAddress, tokenId);
         _tokenIdCounter.increment();
 

@@ -36,8 +36,9 @@ describe("Marketplace", function () {
         .listNFT(tokenId, price, nftContractAddress);
   
       const listing = await marketplace.listings(nftContractAddress, tokenId);
-      expect(listing.owner).to.equal(owner.address);
-      expect(listing.price).to.equal(price);
+      let tokenOwner = await nftContract.ownerOf(tokenId);
+      expect(tokenOwner).to.equal(owner.address);
+      expect(listing).to.equal(price);
   
       expect(await nftContract.ownerOf(tokenId)).to.equal(owner.address);
   
@@ -53,8 +54,9 @@ describe("Marketplace", function () {
         .listNFT(tokenId, price, nftContractAddress);
   
       const listing = await marketplace.listings(nftContractAddress, tokenId);
-      expect(listing.owner).to.equal(owner.address);
-      expect(listing.price).to.equal(price);
+      tokenOwner = await nftContract.ownerOf(tokenId);
+      expect(tokenOwner).to.equal(owner.address);
+      expect(listing).to.equal(price);
   
       expect(await nftContract.ownerOf(tokenId)).to.equal(owner.address);
   
@@ -119,7 +121,7 @@ describe("Marketplace", function () {
         marketplace.connect(buyer).buyNFT(tokenId, nftContractAddress, { value: price })
       ).to.be.revertedWith("Token is not listed");
     });
-  
+
     it("Should throw when trying to buy NFT with unsufficient funds", async function () {
       await marketplace
         .connect(owner)

@@ -5,36 +5,28 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./NFT.sol";
 
 contract Marketplace is ReentrancyGuard {
-    struct Listing {
-        address owner;
-        uint256 price;
-    }
-
-    mapping(address => mapping(uint256 => Listing)) public listings;
+    mapping(address => mapping(uint256 => uint256)) public listings;
 
     event List(address indexed owner, uint256 indexed tokenId, address nftContractAddress, uint256 price);
     event Buy(address indexed buyer, address indexed owner, uint256 indexed tokenId, address nftContractAddress, uint256 price);
     event Cancel(address indexed owner, uint256 indexed tokenId, address indexed nftContractAddress);
 
     function listNFT(uint256 tokenId, uint256 price, address _nftContractAddress) external {
-        require(listings[_nftContractAddress][tokenId].owner == address(0), "Token already listed");
+        require(listings[_nftContractAddress][tokenId] == 0, "Token already listed");
         require(msg.sender == IERC721(_nftContractAddress).ownerOf(tokenId), "Only owner can list the NFT for sale");
         require(price > 0, "Price must be greater than zero");
 
-        listings[_nftContractAddress][tokenId] = Listing({
-            owner: msg.sender,
-            price: price
-        });
+        listings[_nftContractAddress][tokenId] = price;
         
         emit List(msg.sender, tokenId, _nftContractAddress, price);
     }
 
     function buyNFT(uint256 tokenId, address nftContractAddress) external payable {
-        require (listings[nftContractAddress][tokenId].owner != address(0), "Token is not listed");
-        require(msg.value >= listings[nftContractAddress][tokenId].price, "Insufficient funds");
+        require (listings[nftContractAddress][tokenId] != 0, "Token is not listed");
+        require(msg.value >= listings[nftContractAddress][tokenId], "Insufficient funds");
 
-        address seller = listings[nftContractAddress][tokenId].owner;
-        uint256 price = listings[nftContractAddress][tokenId].price;
+        address seller = IERC721(nftContractAddress).ownerOf(tokenId);
+        uint256 price = listings[nftContractAddress][tokenId];
 
         delete listings[nftContractAddress][tokenId];
 
@@ -56,8 +48,8 @@ contract Marketplace is ReentrancyGuard {
     }
 
     function cancelListing(uint256 tokenId, address nftContractAddress) external {
-        require (listings[nftContractAddress][tokenId].owner != address(0), "Token is not listed");
-        require(msg.sender == listings[nftContractAddress][tokenId].owner, "Only owner can cancel the listing");
+        require (listings[nftContractAddress][tokenId] != 0, "Token is not listed");
+        require(msg.sender == IERC721(nftContractAddress).ownerOf(tokenId), "Only owner can cancel the listing");
 
         delete listings[nftContractAddress][tokenId];
 
