@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./NFT.sol";
 
 contract Marketplace is ReentrancyGuard {
+    // nftContractAddress => tokenId => price
     mapping(address => mapping(uint256 => uint256)) public listings;
 
     event List(address indexed owner, uint256 indexed tokenId, address nftContractAddress, uint256 price);
